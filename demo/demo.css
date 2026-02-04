@@ -74,3 +74,24 @@ body {
 .comment.spam {
   opacity: 0.6;
 }
+
+.links {
+  display: grid;
+  gap: 16px;
+}
+
+.link-card {
+  display: block;
+  background: #ffffff;
+  border: 1px solid #e0e5eb;
+  border-radius: 14px;
+  padding: 18px 20px;
+  font-weight: 600;
+  color: #1d232a;
+  text-decoration: none;
+  box-shadow: 0 8px 18px rgba(30, 41, 59, 0.08);
+}
+
+.link-card:hover {
+  border-color: #c5d2e2;
+}

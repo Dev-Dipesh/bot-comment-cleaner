@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Bot Comment Cleaner Demo - Visible</title>
+    <link rel="stylesheet" href="../styles.css" />
+    <link rel="stylesheet" href="./demo.css" />
+  </head>
+  <body>
+    <main class="page">
+      <header class="hero">
+        <div class="eyebrow">Demo Page</div>
+        <h1>Comments Visible</h1>
+        <p>Represents the "Show All Comments" state.</p>
+      </header>
+
+      <section class="comments">
+        <h2>Comments</h2>
+        <div class="comment">
+          <div class="meta">Viewer · a few seconds ago</div>
+          <p>Love the worldbuilding so far. The pacing feels intentional and I’m curious where it goes.</p>
+        </div>
+        <div class="comment spam">
+          <div class="meta">Mia · 2 minutes ago</div>
+          <p>Hi 😘 follow me for pics 👉 lovex.su</p>
+        </div>
+        <div class="comment">
+          <div class="meta">Fan123 · 5 minutes ago</div>
+          <p>This episode did a great job setting up the next arc.</p>
+        </div>
+        <div class="comment spam">
+          <div class="meta">Unknown · 8 minutes ago</div>
+          <p>👅💋 Uploaded all kind of content, contact here acort.me/abc</p>
+        </div>
+      </section>
+    </main>
+
+    <div class="bcc-panel">
+      <div class="bcc-title">Comment Cleaner</div>
+      <div class="bcc-status">Idle</div>
+      <div class="bcc-counts">
+        <div class="bcc-count-item">
+          <span class="bcc-count-label">Scanned</span>
+          <span class="bcc-count-value">10</span>
+        </div>
+        <div class="bcc-count-item">
+          <span class="bcc-count-label">Hidden</span>
+          <span class="bcc-count-value">0</span>
+        </div>
+      </div>
+      <div class="bcc-actions">
+        <button class="bcc-btn" type="button">Scan Now</button>
+        <button class="bcc-btn" type="button">Hide Spam</button>
+        <button class="bcc-btn" type="button">Minimize</button>
+      </div>
+    </div>
+  </body>
+</html>

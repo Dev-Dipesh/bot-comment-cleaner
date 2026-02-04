@@ -1,0 +1,76 @@
+:root {
+  color-scheme: light;
+  font-family: "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  background: #f4f5f7;
+}
+
+body {
+  margin: 0;
+  background: linear-gradient(180deg, #eef1f4 0%, #f7f8fa 60%);
+  color: #1d232a;
+}
+
+.page {
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 48px 24px 160px;
+}
+
+.hero {
+  background: #ffffff;
+  border: 1px solid #e0e5eb;
+  border-radius: 16px;
+  padding: 28px 32px;
+  box-shadow: 0 12px 30px rgba(30, 41, 59, 0.08);
+  margin-bottom: 32px;
+}
+
+.eyebrow {
+  text-transform: uppercase;
+  font-size: 12px;
+  letter-spacing: 0.12em;
+  color: #6b7a8b;
+  margin-bottom: 8px;
+}
+
+.hero h1 {
+  margin: 0 0 10px;
+  font-size: 28px;
+}
+
+.hero p {
+  margin: 0;
+  color: #4c5a6a;
+}
+
+.comments {
+  background: #ffffff;
+  border: 1px solid #e0e5eb;
+  border-radius: 16px;
+  padding: 24px 28px;
+  box-shadow: 0 10px 24px rgba(30, 41, 59, 0.06);
+}
+
+.comments h2 {
+  margin: 0 0 16px;
+  font-size: 20px;
+}
+
+.comment {
+  border-top: 1px solid #eef1f4;
+  padding: 14px 0;
+}
+
+.comment:first-of-type {
+  border-top: none;
+}
+
+.meta {
+  font-size: 12px;
+  color: #7b8897;
+  margin-bottom: 6px;
+}
+
+.comment.spam {
+  opacity: 0.6;
+}

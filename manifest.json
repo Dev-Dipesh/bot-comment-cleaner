@@ -1,0 +1,25 @@
+{
+  "manifest_version": 3,
+  "name": "Bot Comment Cleaner",
+  "version": "0.1.0",
+  "description": "Client-side cleanup of bot/sexual spam comments using regex filters.",
+  "icons": {
+    "16": "icons/icon-16.png",
+    "32": "icons/icon-32.png",
+    "48": "icons/icon-48.png",
+    "128": "icons/icon-128.png"
+  },
+  "permissions": [],
+  "host_permissions": [
+    "https://hianime.to/*"
+  ],
+  "content_scripts": [
+    {
+      "matches": ["https://hianime.to/*"],
+      "js": ["filters.js", "content.js"],
+      "css": ["styles.css"],
+      "run_at": "document_end",
+      "all_frames": true
+    }
+  ]
+}

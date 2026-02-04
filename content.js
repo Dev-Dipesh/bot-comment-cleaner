@@ -178,9 +178,23 @@
     const panel = document.createElement('div');
     panel.className = 'bcc-panel';
 
+    const header = document.createElement('div');
+    header.className = 'bcc-header';
+
     const title = document.createElement('div');
     title.className = 'bcc-title';
     title.textContent = 'Comment Cleaner';
+
+    const coffeeLink = document.createElement('a');
+    coffeeLink.className = 'bcc-coffee';
+    coffeeLink.href = 'https://buymeacoffee.com/devdb';
+    coffeeLink.target = '_blank';
+    coffeeLink.rel = 'noopener noreferrer';
+    coffeeLink.title = 'Buy me a coffee';
+    coffeeLink.innerHTML = `<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"16\" height=\"16\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M10 2v2\"/><path d=\"M14 2v2\"/><path d=\"M18 2v2\"/><path d=\"M3 8h15a4 4 0 0 1 0 8h-1\"/><path d=\"M3 8v8a4 4 0 0 0 4 4h6a4 4 0 0 0 4-4v-4\"/></svg>`;
+
+    header.appendChild(title);
+    header.appendChild(coffeeLink);
 
     const status = document.createElement('div');
     status.className = 'bcc-status';
@@ -258,7 +272,7 @@
     actions.appendChild(toggleBtn);
     actions.appendChild(minimizeBtn);
 
-    panel.appendChild(title);
+    panel.appendChild(header);
     panel.appendChild(status);
     panel.appendChild(counts);
     panel.appendChild(actions);

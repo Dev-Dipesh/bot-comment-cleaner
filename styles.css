@@ -36,6 +36,30 @@
   margin-bottom: 4px;
 }
 
+.bcc-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.bcc-coffee {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: #e6eef7;
+  border: 1px solid #2f3a46;
+  background: #171d24;
+  width: 24px;
+  height: 24px;
+  border-radius: 6px;
+  text-decoration: none;
+}
+
+.bcc-coffee:hover {
+  background: #1f2630;
+}
+
 .bcc-status {
   color: #9fb7d0;
   margin-bottom: 8px;

@@ -15,11 +15,15 @@ const SPAM_DOMAINS = [
   'telegram',
   't.me/',
   'tele.gg',
+  'discord.gg',
+  'dc.gg',
   'snapleaks',
   'scrollx.org',
   'hot1.top',
   'acort.me',
   'bit.ly',
+  'goo.gl',
+  't.co',
   'tinyurl.com',
   'short.link',
   'linktr.ee'
@@ -39,6 +43,7 @@ const SEXUAL_KEYWORDS = [
   'rule34', 'r34',
   'onlyfans', 'only fan',
   'nsfw',
+  'cum', 'cock', 'pussy', 'dick', 'blowjob',
   'horny', 'wet',
   'telegram', 'telgram',
   'snapchat', 'snapleaks',
@@ -56,6 +61,23 @@ const BOT_PHRASES = [
   'check my',
   'dm me',
   'contact here',
+  'contact me',
+  'send nudes',
+  'nudes here',
+  'free nudes',
+  'of link',
+  'sub onlyfans',
+  'hot girls',
+  'hot girl',
+  'hot singles',
+  'meet girls',
+  'join my discord',
+  'join our discord',
+  'discord me',
+  'tiktok for',
+  'no ads',
+  'ad-free',
+  'ad free',
   'my telegram',
   'uploaded all kind',
   'click here',
@@ -112,7 +134,10 @@ const patterns = {
   personalWithAdult: /(my name is|i am|i'm).*(nudes|naked|sex|porn|onlyfans|telegram)/i,
 
   // Obfuscated text (with zero-width characters or excessive spacing)
-  obfuscatedText: /(\w\s+){5,}\w/  // Words with excessive spaces between letters
+  obfuscatedText: /(\w\s+){5,}\w/,  // Words with excessive spaces between letters
+
+  // Suspicious TLDs when link-like token exists
+  suspiciousTld: /\.(top|fun|live|xyz|club|site|online|pro|cc|me|link)(\/|$)/i
 };
 
 /**
@@ -205,6 +230,12 @@ function classifyComment(text, username, links) {
     confidence += 0.2;
   }
 
+  // 7b. Check for suspicious TLDs in link-like tokens
+  if (patterns.suspiciousTld.test(text) || patterns.suspiciousTld.test(normalized)) {
+    reasons.push('Suspicious link TLD');
+    confidence += 0.3;
+  }
+
   // 8. Check for obfuscated text (spammers trying to bypass filters)
   if (patterns.obfuscatedText.test(text) || patterns.obfuscatedText.test(normalized)) {
     reasons.push('Obfuscated text pattern');
@@ -223,6 +254,13 @@ function classifyComment(text, username, links) {
   if (/^(hi|hello|hey).*\p{Emoji}{3,}/iu.test(text)) {
     reasons.push('Greeting with excessive emojis');
     confidence += 0.3;
+  }
+
+  // 11. Emoji count threshold (4+ emojis)
+  const basicEmojiCount = (text.match(/[\u{1F300}-\u{1F6FF}\u{2600}-\u{27BF}]/gu) || []).length;
+  if (basicEmojiCount >= 4) {
+    reasons.push('High emoji count');
+    confidence += 0.2;
   }
 
   // Cap confidence at 1.0

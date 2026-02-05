@@ -55,3 +55,6 @@ You can also add keywords to `wordlists/sexual-en.txt` (one term per line). This
 
 ## License
 MIT
+
+## Contributing
+See `CONTRIBUTING.md` for contribution guidelines.

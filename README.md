@@ -41,6 +41,12 @@ From the `bot-comment-cleaner/` folder:
 node scripts/test-comments.js
 ```
 
+Or via npm:
+
+```bash
+npm test
+```
+
 Add more test cases to `tests/comments.json` over time and re-run the command.
 
 ## Customize filters

@@ -20,6 +20,7 @@ const SPAM_DOMAINS = [
   'snapleaks',
   'scrollx.org',
   'hot1.top',
+  'hot1top',
   'acort.me',
   'bit.ly',
   'goo.gl',
@@ -30,9 +31,10 @@ const SPAM_DOMAINS = [
 ];
 
 /**
- * Sexual and inappropriate keywords
+ * Sexual and inappropriate keywords (regex fragments).
+ * These are hand-tuned and may include regex punctuation.
  */
-const SEXUAL_KEYWORDS = [
+const BASE_SEXUAL_KEYWORDS = [
   'nudes', 'nude', 'naked',
   'porn', 'p0rn', 'p3orn',
   'sex', 's.ex', 's­ex',
@@ -49,6 +51,9 @@ const SEXUAL_KEYWORDS = [
   'snapchat', 'snapleaks',
   'only fans'
 ];
+
+// Keywords loaded from local wordlist file (literal terms).
+let WORDLIST_SEXUAL_KEYWORDS = [];
 
 /**
  * Bot/spam phrases commonly used
@@ -95,9 +100,55 @@ const BOT_PHRASES = [
  * Emoji spam patterns (excessive sexual emojis)
  */
 const SEXUAL_EMOJIS = [
-  '🔞', '🍆', '🍑', '💋', '👅',
-  '🥵', '💦', '🔥', '❤️‍🔥', '💯'
+  '🔞', '🍆', '🍑', '💋', '👅', '👄',
+  '🥵', '💦', '🔥', '❤️‍🔥'
 ];
+
+const WORDLIST_PATH = 'wordlists/sexual-en.txt';
+
+function compactText(input) {
+  if (!input) return '';
+  return input.toLowerCase().replace(/[^a-z0-9]/g, '');
+}
+
+function escapeRegex(input) {
+  return input.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
+function rebuildSexualKeywordPattern(patterns) {
+  const wordlistEscaped = WORDLIST_SEXUAL_KEYWORDS.map(escapeRegex);
+  const fragments = BASE_SEXUAL_KEYWORDS.concat(wordlistEscaped);
+  patterns.sexualKeywords = new RegExp(fragments.join('|'), 'i');
+
+  const compactFragments = fragments
+    .map(fragment => fragment.replace(/[^a-z0-9]/gi, ''))
+    .filter(fragment => fragment.length >= 3);
+  patterns.compactSexualKeywords = new RegExp(compactFragments.join('|'), 'i');
+}
+
+function addWordlistKeywords(lines, patterns) {
+  const normalized = lines
+    .map(line => line.trim().toLowerCase())
+    .filter(Boolean)
+    .filter(line => !line.startsWith('#'));
+  const merged = new Set([...WORDLIST_SEXUAL_KEYWORDS, ...normalized]);
+  WORDLIST_SEXUAL_KEYWORDS = Array.from(merged);
+  rebuildSexualKeywordPattern(patterns);
+}
+
+async function loadSexualWordlist(patterns) {
+  const url = (typeof chrome !== 'undefined' && chrome.runtime && chrome.runtime.getURL)
+    ? chrome.runtime.getURL(WORDLIST_PATH)
+    : WORDLIST_PATH;
+  try {
+    const res = await fetch(url);
+    if (!res.ok) return;
+    const text = await res.text();
+    addWordlistKeywords(text.split(/\r?\n/), patterns);
+  } catch {
+    // Optional wordlist; ignore failures.
+  }
+}
 
 /**
  * Compile regex patterns
@@ -114,12 +165,17 @@ const patterns = {
     SPAM_DOMAINS.map(domain => domain.replace(/\./g, '\\.')).join('|'),
     'i'
   ),
-
-  // Sexual keywords
-  sexualKeywords: new RegExp(
-    SEXUAL_KEYWORDS.join('|'),
+  spamDomainsCompact: new RegExp(
+    SPAM_DOMAINS
+      .map(domain => domain.replace(/[^a-z0-9]/gi, ''))
+      .filter(domain => domain.length >= 4)
+      .join('|'),
     'i'
   ),
+
+  // Sexual keywords
+  sexualKeywords: /$^/,
+  compactSexualKeywords: /$^/,
 
   // Bot phrases
   botPhrases: new RegExp(
@@ -140,6 +196,9 @@ const patterns = {
   suspiciousTld: /\.(top|fun|live|xyz|club|site|online|pro|cc|me|link)(\/|$)/i
 };
 
+rebuildSexualKeywordPattern(patterns);
+loadSexualWordlist(patterns);
+
 /**
  * Normalize text to catch obfuscation (zero-width, separators, homoglyph spacing)
  */
@@ -149,8 +208,10 @@ function normalizeText(input) {
     .toLowerCase()
     // Remove zero-width and soft hyphen characters
     .replace(/[\u200B-\u200F\uFEFF\u00AD]/g, '')
-    // Collapse separators between letters (e.g. s.e.x -> sex)
-    .replace(/([a-z])[^a-z0-9]+([a-z])/g, '$1$2')
+    // Collapse separators between alphanumerics (e.g. s.e.x or n-u-d-e-s)
+    .replace(/([a-z0-9])[^a-z0-9]+([a-z0-9])/g, '$1$2')
+    // Normalize spaced dots in domains (e.g. hot1 . top)
+    .replace(/\s*\.\s*/g, '.')
     // Normalize whitespace
     .replace(/\s+/g, ' ')
     .trim();
@@ -164,6 +225,7 @@ function classifyComment(text, username, links) {
   const reasons = [];
   let confidence = 0;
   const normalized = normalizeText(text);
+  const compact = compactText(text);
 
   // Fast check: Empty or very short comments
   if (!text || text.length < 20) {
@@ -171,7 +233,11 @@ function classifyComment(text, username, links) {
   }
 
   // 1. Check for known spam domains (HIGH confidence)
-  if (patterns.spamDomains.test(text) || patterns.spamDomains.test(normalized)) {
+  if (
+    patterns.spamDomains.test(text) ||
+    patterns.spamDomains.test(normalized) ||
+    patterns.spamDomainsCompact.test(compact)
+  ) {
     reasons.push('Contains known spam domain');
     confidence += 0.7;
   }
@@ -186,7 +252,11 @@ function classifyComment(text, username, links) {
   }
 
   // 2. Check for sexual keywords (MEDIUM confidence)
-  if (patterns.sexualKeywords.test(text) || patterns.sexualKeywords.test(normalized)) {
+  if (
+    patterns.sexualKeywords.test(text) ||
+    patterns.sexualKeywords.test(normalized) ||
+    patterns.compactSexualKeywords.test(compact)
+  ) {
     reasons.push('Contains sexual/inappropriate keywords');
     confidence += 0.5;
   }

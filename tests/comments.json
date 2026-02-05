@@ -1,0 +1,30 @@
+[
+  {
+    "text": "Hi! 💟😍 My n-u-d-e-s photos 👉 [ H O T 1 . T O P ] 💕👄",
+    "username": "",
+    "links": [],
+    "expectedSpam": true,
+    "note": "Obfuscated sexual + spam domain"
+  },
+  {
+    "text": "Great episode, thanks for the upload!",
+    "username": "",
+    "links": [],
+    "expectedSpam": false,
+    "note": "Legit comment"
+  },
+  {
+    "text": "DM me for free nudes",
+    "username": "",
+    "links": [],
+    "expectedSpam": true,
+    "note": "Sexual keyword + bot phrase"
+  },
+  {
+    "text": "Check this out: https://bit.ly/xyz",
+    "username": "user1234",
+    "links": [{"href":"https://bit.ly/xyz"}],
+    "expectedSpam": true,
+    "note": "Shortened spam domain"
+  }
+]

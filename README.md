@@ -34,8 +34,18 @@ From the `bot-comment-cleaner/` folder:
 
 This creates `dist/bot-comment-cleaner.zip`.
 
+## Run local tests
+From the `bot-comment-cleaner/` folder:
+
+```bash
+node scripts/test-comments.js
+```
+
+Add more test cases to `tests/comments.json` over time and re-run the command.
+
 ## Customize filters
 Edit `filters.js` to add or tweak patterns.
+You can also add keywords to `wordlists/sexual-en.txt` (one term per line). This is loaded locally by the extension at runtime.
 
 ## License
 MIT

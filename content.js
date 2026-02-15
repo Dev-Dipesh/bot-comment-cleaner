@@ -58,7 +58,7 @@
   }
 
   function isHianimeDomain(host) {
-    return /^hianime(\.|z\.)/i.test(host);
+    return /(^|\.)hianime(\.|z\.)/i.test(host);
   }
 
   function getContainer(cfg) {

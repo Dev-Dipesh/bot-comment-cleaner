@@ -17,9 +17,20 @@
     reasonCounts: {}
   };
 
+  const VALID_HOSTS = [
+    'hianime.nz',
+    'hianime.bz',
+    'hianime.do',
+    'hianime.pe',
+    'hianime.cx',
+    'hianime.to',
+    'hianimez.is',
+    'hianimez.to'
+  ];
+
   const SITE_CONFIGS = [
     {
-      hostRe: /(^|\.)hianime\.to$/,
+      hostRe: /(^|\.)hianime\.nz$|(^|\.)hianime\.bz$|(^|\.)hianime\.do$|(^|\.)hianime\.pe$|(^|\.)hianime\.cx$|(^|\.)hianime\.to$|(^|\.)hianimez\.is$|(^|\.)hianimez\.to$/,
       containerSelector: '#content-comments',
       commentSelectors: [
         '#content-comments div[id^="cm-"]',
@@ -40,6 +51,14 @@
   function getSiteConfig() {
     const host = window.location.hostname;
     return SITE_CONFIGS.find(cfg => cfg.hostRe.test(host)) || null;
+  }
+
+  function isValidHost(host) {
+    return VALID_HOSTS.some(valid => host === valid || host.endsWith(`.${valid}`));
+  }
+
+  function isHianimeDomain(host) {
+    return /^hianime(\.|z\.)/i.test(host);
   }
 
   function getContainer(cfg) {
@@ -163,15 +182,105 @@
     const panel = document.querySelector('.bcc-panel') || createPanel();
     const scannedEl = panel.querySelector('.bcc-count-scanned');
     const hiddenEl = panel.querySelector('.bcc-count-hidden');
-    const statusEl = panel.querySelector('.bcc-status');
-    const toggleBtn = panel.querySelector('.bcc-toggle');
-    const minimizeBtn = panel.querySelector('.bcc-minimize');
+    const toggleInput = panel.querySelector('.bcc-switch input');
+    const toggleStatus = panel.querySelector('.bcc-toggle-status');
 
     scannedEl.textContent = runtimeStats.scannedComments.toString();
     hiddenEl.textContent = runtimeStats.hiddenComments.toString();
-    statusEl.textContent = runtimeStats.isScanning ? 'Scanning…' : 'Idle';
-    toggleBtn.textContent = SETTINGS.enabled ? 'Show All Comments' : 'Hide Spam';
-    minimizeBtn.textContent = panel.classList.contains('bcc-minimized') ? 'Expand' : 'Minimize';
+    if (toggleInput) toggleInput.checked = SETTINGS.enabled;
+    if (toggleStatus) {
+      toggleStatus.textContent = SETTINGS.enabled ? 'Active' : 'Disabled';
+      toggleStatus.classList.toggle('bcc-off', !SETTINGS.enabled);
+    }
+    updateMinimizeIcon(panel);
+  }
+
+  function createIcon(type) {
+    const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+    svg.setAttribute('viewBox', '0 0 24 24');
+    svg.setAttribute('width', '16');
+    svg.setAttribute('height', '16');
+    svg.setAttribute('fill', 'none');
+    svg.setAttribute('stroke', 'currentColor');
+    svg.setAttribute('stroke-width', '2');
+    svg.setAttribute('stroke-linecap', 'round');
+    svg.setAttribute('stroke-linejoin', 'round');
+
+    const line1 = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+    line1.setAttribute('x1', '5');
+    line1.setAttribute('y1', '12');
+    line1.setAttribute('x2', '19');
+    line1.setAttribute('y2', '12');
+    svg.appendChild(line1);
+
+    if (type === 'plus') {
+      const line2 = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+      line2.setAttribute('x1', '12');
+      line2.setAttribute('y1', '5');
+      line2.setAttribute('x2', '12');
+      line2.setAttribute('y2', '19');
+      svg.appendChild(line2);
+    }
+
+    return svg;
+  }
+
+  function updateMinimizeIcon(panel) {
+    const btn = panel.querySelector('.bcc-minimize');
+    if (!btn) return;
+    btn.innerHTML = '';
+    const icon = panel.classList.contains('bcc-minimized') ? createIcon('plus') : createIcon('minus');
+    btn.appendChild(icon);
+    btn.setAttribute(
+      'aria-label',
+      panel.classList.contains('bcc-minimized') ? 'Expand panel' : 'Minimize panel'
+    );
+  }
+
+  function toggleMinimized(panel) {
+    panel.classList.toggle('bcc-minimized');
+    updateMinimizeIcon(panel);
+  }
+
+  function setInfoOpen(panel, isOpen) {
+    const info = panel.querySelector('.bcc-info');
+    if (!info) return;
+    info.classList.toggle('is-open', isOpen);
+    const icon = info.querySelector('.bcc-collapse-icon');
+    if (icon) {
+      icon.innerHTML = '';
+      icon.appendChild(createIcon(isOpen ? 'minus' : 'plus'));
+    }
+  }
+
+  function createSwitch({ checked, onChange }) {
+    const label = document.createElement('label');
+    label.className = 'switch-button bcc-switch';
+
+    const outer = document.createElement('div');
+    outer.className = 'switch-outer';
+
+    const input = document.createElement('input');
+    input.type = 'checkbox';
+    input.checked = Boolean(checked);
+    input.addEventListener('change', () => onChange(input.checked));
+
+    const button = document.createElement('div');
+    button.className = 'button';
+
+    const toggle = document.createElement('span');
+    toggle.className = 'button-toggle';
+
+    const indicator = document.createElement('span');
+    indicator.className = 'button-indicator';
+
+    button.appendChild(toggle);
+    button.appendChild(indicator);
+    outer.appendChild(input);
+    outer.appendChild(button);
+    label.appendChild(outer);
+
+    return { label, input };
   }
 
   function createPanel() {
@@ -181,24 +290,32 @@
     const header = document.createElement('div');
     header.className = 'bcc-header';
 
+    const titleWrap = document.createElement('div');
+    titleWrap.className = 'bcc-title-wrap';
+
+    const icon = document.createElement('img');
+    icon.className = 'bcc-icon';
+    icon.src = chrome.runtime.getURL('icons/icon-32.png');
+    icon.alt = '';
+    icon.loading = 'lazy';
+
     const title = document.createElement('div');
     title.className = 'bcc-title';
     title.textContent = 'Comment Cleaner';
 
-    const coffeeLink = document.createElement('a');
-    coffeeLink.className = 'bcc-coffee';
-    coffeeLink.href = 'https://buymeacoffee.com/devdb';
-    coffeeLink.target = '_blank';
-    coffeeLink.rel = 'noopener noreferrer';
-    coffeeLink.title = 'Buy me a coffee';
-    coffeeLink.innerHTML = `<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"16\" height=\"16\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M10 2v2\"/><path d=\"M14 2v2\"/><path d=\"M18 2v2\"/><path d=\"M3 8h15a4 4 0 0 1 0 8h-1\"/><path d=\"M3 8v8a4 4 0 0 0 4 4h6a4 4 0 0 0 4-4v-4\"/></svg>`;
+    const minimizeBtn = document.createElement('button');
+    minimizeBtn.className = 'bcc-minimize';
+    minimizeBtn.type = 'button';
+    minimizeBtn.addEventListener('click', event => {
+      event.stopPropagation();
+      toggleMinimized(panel);
+    });
 
-    header.appendChild(title);
-    header.appendChild(coffeeLink);
+    titleWrap.appendChild(icon);
+    titleWrap.appendChild(title);
 
-    const status = document.createElement('div');
-    status.className = 'bcc-status';
-    status.textContent = 'Idle';
+    header.appendChild(titleWrap);
+    header.appendChild(minimizeBtn);
 
     const counts = document.createElement('div');
     counts.className = 'bcc-counts';
@@ -214,52 +331,108 @@
     counts.appendChild(scanned);
     counts.appendChild(hidden);
 
+    const info = document.createElement('div');
+    info.className = 'bcc-info';
+
+    const infoHeader = document.createElement('div');
+    infoHeader.className = 'bcc-info-header';
+
+    const infoTitle = document.createElement('div');
+    infoTitle.className = 'bcc-info-title';
+
+    const infoCheck = document.createElement('span');
+    infoCheck.className = 'bcc-info-check';
+    infoCheck.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>`;
+
+    const infoText = document.createElement('span');
+    infoText.textContent = 'On Trusted Site';
+
+    infoTitle.appendChild(infoCheck);
+    infoTitle.appendChild(infoText);
+
+    const infoIcon = document.createElement('span');
+    infoIcon.className = 'bcc-collapse-icon';
+    infoIcon.appendChild(createIcon('minus'));
+
+    infoHeader.appendChild(infoTitle);
+    infoHeader.appendChild(infoIcon);
+
+    const infoBody = document.createElement('div');
+    infoBody.className = 'bcc-info-body';
+
+    const infoDesc = document.createElement('div');
+    infoDesc.className = 'bcc-info-desc';
+    infoDesc.textContent = 'Official domains:';
+
+    const infoList = document.createElement('ul');
+    infoList.className = 'bcc-info-list';
+    const currentHost = window.location.hostname;
+    VALID_HOSTS.forEach(host => {
+      const item = document.createElement('li');
+      item.textContent = host;
+      if (currentHost === host || currentHost.endsWith(`.${host}`)) {
+        item.classList.add('bcc-info-current');
+      }
+      infoList.appendChild(item);
+    });
+
+    infoBody.appendChild(infoDesc);
+    infoBody.appendChild(infoList);
+
+    info.appendChild(infoHeader);
+    info.appendChild(infoBody);
+
+    infoHeader.addEventListener('click', () => {
+      const isOpen = info.classList.contains('is-open');
+      setInfoOpen(panel, !isOpen);
+    });
+
     const actions = document.createElement('div');
     actions.className = 'bcc-actions';
 
-    const scanBtn = document.createElement('button');
-    scanBtn.className = 'bcc-btn';
-    scanBtn.type = 'button';
-    scanBtn.textContent = 'Scan Now';
-    scanBtn.addEventListener('click', () => {
-      const cfg = getSiteConfig();
-      if (!cfg) return;
-      const container = getContainer(cfg);
-      if (container) scanContainer(container, cfg);
-    });
+    const toggleRow = document.createElement('div');
+    toggleRow.className = 'bcc-toggle-row';
 
-    const toggleBtn = document.createElement('button');
-    toggleBtn.className = 'bcc-btn bcc-toggle';
-    toggleBtn.type = 'button';
-    toggleBtn.textContent = SETTINGS.enabled ? 'Show All Comments' : 'Hide Spam';
-    toggleBtn.addEventListener('click', () => {
-      SETTINGS.enabled = !SETTINGS.enabled;
-      localStorage.setItem('bcc_enabled', SETTINGS.enabled ? '1' : '0');
+    const toggleMeta = document.createElement('div');
+    toggleMeta.className = 'bcc-toggle-meta';
 
-      const cfg = getSiteConfig();
-      if (!cfg) return;
-      const container = getContainer(cfg);
-      if (!container) return;
+    const toggleLabel = document.createElement('span');
+    toggleLabel.className = 'bcc-toggle-label';
+    toggleLabel.textContent = 'Spam Filter';
 
-      if (!SETTINGS.enabled) {
-        showAllHidden(container);
-        removePlaceholders(container);
-        runtimeStats.hiddenComments = 0;
-        updatePanel(container, cfg);
-      } else {
-        resetProcessed(container);
-        scanContainer(container, cfg);
+    const toggleStatus = document.createElement('span');
+    toggleStatus.className = 'bcc-toggle-status';
+    toggleStatus.textContent = SETTINGS.enabled ? 'Active' : 'Disabled';
+    toggleStatus.classList.toggle('bcc-off', !SETTINGS.enabled);
+
+    toggleMeta.appendChild(toggleLabel);
+    toggleMeta.appendChild(toggleStatus);
+
+    const { label: toggleSwitch } = createSwitch({
+      checked: SETTINGS.enabled,
+      onChange: checked => {
+        SETTINGS.enabled = checked;
+        localStorage.setItem('bcc_enabled', SETTINGS.enabled ? '1' : '0');
+
+        const cfg = getSiteConfig();
+        if (!cfg) return;
+        const container = getContainer(cfg);
+        if (!container) return;
+
+        if (!SETTINGS.enabled) {
+          showAllHidden(container);
+          removePlaceholders(container);
+          runtimeStats.hiddenComments = 0;
+          updatePanel(container, cfg);
+        } else {
+          resetProcessed(container);
+          scanContainer(container, cfg);
+        }
       }
     });
 
-    const minimizeBtn = document.createElement('button');
-    minimizeBtn.className = 'bcc-btn bcc-minimize';
-    minimizeBtn.type = 'button';
-    minimizeBtn.textContent = 'Minimize';
-    minimizeBtn.addEventListener('click', () => {
-      panel.classList.toggle('bcc-minimized');
-      updatePanel();
-    });
+    toggleRow.appendChild(toggleMeta);
+    toggleRow.appendChild(toggleSwitch);
 
     panel.addEventListener('click', event => {
       if (!panel.classList.contains('bcc-minimized')) return;
@@ -268,15 +441,14 @@
       updatePanel();
     });
 
-    actions.appendChild(scanBtn);
-    actions.appendChild(toggleBtn);
-    actions.appendChild(minimizeBtn);
+    actions.appendChild(toggleRow);
 
     panel.appendChild(header);
-    panel.appendChild(status);
     panel.appendChild(counts);
     panel.appendChild(actions);
+    panel.appendChild(info);
     document.body.appendChild(panel);
+    updateMinimizeIcon(panel);
     return panel;
   }
 
@@ -338,6 +510,15 @@
   }
 
   function start() {
+    const host = window.location.hostname;
+    if (isHianimeDomain(host) && !isValidHost(host)) {
+      alert(
+        `Warning: This domain isn't in the official list and may be a phishing site. ` +
+          `Valid domains: ${VALID_HOSTS.join(', ')}`
+      );
+      return;
+    }
+
     const cfg = getSiteConfig();
     if (!cfg) return;
 

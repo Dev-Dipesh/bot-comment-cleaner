@@ -14,8 +14,12 @@ if (!global.chrome) {
   };
 }
 
-if (!global.fetch) {
-  global.fetch = async (url) => {
+const nativeFetch = global.fetch;
+global.fetch = async (url, options) => {
+  const isStringUrl = typeof url === 'string';
+  const isFileLikePath = isStringUrl && (/^[A-Za-z]:\\/.test(url) || url.startsWith('/') || url.startsWith('file://'));
+
+  if (isFileLikePath) {
     try {
       const filePath = url.startsWith('file://') ? url.slice(7) : url;
       const text = await fs.promises.readFile(filePath, 'utf8');
@@ -23,8 +27,14 @@ if (!global.fetch) {
     } catch {
       return { ok: false, text: async () => '' };
     }
-  };
-}
+  }
+
+  if (typeof nativeFetch === 'function') {
+    return nativeFetch(url, options);
+  }
+
+  return { ok: false, text: async () => '' };
+};
 
 require(path.join(root, 'filters.js'));
 

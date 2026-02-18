@@ -36,6 +36,29 @@ Comment filtering runs locally in your browser. The extension can fetch public f
 3. Click **Load unpacked**
 4. Select the `bot-comment-cleaner/` folder
 
+## Userscript install (one-file)
+This repo now includes a one-file userscript: `Tampermonkey/bot-comment-cleaner.js`.
+
+- Chromium / Chrome / Edge:
+  1. Install Tampermonkey or Violentmonkey.
+  2. Create a new script and paste `Tampermonkey/bot-comment-cleaner.js`.
+  3. Save and enable the script.
+
+- Firefox:
+  1. Install Tampermonkey, Violentmonkey, or Greasemonkey.
+  2. Create a new script and paste `Tampermonkey/bot-comment-cleaner.js`.
+  3. Save and enable the script.
+
+- Safari:
+  1. Install **Userscripts** or **Stay** from the App Store.
+  2. Import or paste `Tampermonkey/bot-comment-cleaner.js`.
+  3. Save and enable the script.
+  4. Both work on Safari mobile (iPhone/iPad) as well.
+
+Notes
+- The userscript is self-contained (no `@require` dependencies).
+- Filtering remains local-only; no comment data is sent to external servers.
+
 ## Build a zip for Chrome Web Store
 From the `bot-comment-cleaner/` folder:
 

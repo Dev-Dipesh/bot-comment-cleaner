@@ -52,6 +52,8 @@ const FALLBACK_FILTER_DATA = {
     'cum', 'cock', 'pussy', 'dick', 'blowjob',
     'horny', 'wet',
     'telegram', 'telgram',
+    'available via the site in my username',
+    'site in my username',
     'snapchat', 'snapleaks',
     'only fans'
   ],
@@ -92,7 +94,7 @@ const FALLBACK_FILTER_DATA = {
     'hello guys',
     'hey guys'
   ],
-  sexualEmojis: ['🔞', '🍆', '🍑', '💋', '👅', '👄', '🥵', '💦', '🔥', '❤️‍🔥'],
+  sexualEmojis: ['🔞', '🍆', '🍑', '🌽', '💋', '👅', '👄', '🥵', '💦', '🔥', '❤️‍🔥'],
   validHosts: [
     'hianime.nz',
     'hianime.bz',

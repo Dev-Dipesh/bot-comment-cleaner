@@ -4,6 +4,8 @@
   "private": true,
   "description": "Client-side cleanup of bot/sexual spam comments using regex filters.",
   "scripts": {
-    "test": "node scripts/test-comments.js"
+    "test": "node scripts/test-comments.js",
+    "verify:userscript": "node Tampermonkey/verify-userscript.js",
+    "test:userscript": "node --check Tampermonkey/bot-comment-cleaner.js && node Tampermonkey/verify-userscript.js"
   }
 }

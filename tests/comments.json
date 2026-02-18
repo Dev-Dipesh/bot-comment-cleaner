@@ -107,5 +107,19 @@
     "links": [],
     "expectedSpam": true,
     "note": "Very short domain-only spam text"
+  },
+  {
+    "text": "no detesto esta 🌽 available via the site in my username. Enjoy! 💦",
+    "username": "",
+    "links": [],
+    "expectedSpam": true,
+    "note": "Username/site evasive spam phrasing"
+  },
+  {
+    "text": "I changed my username on this site yesterday and now comments work great.",
+    "username": "",
+    "links": [],
+    "expectedSpam": false,
+    "note": "Legit username/site mention"
   }
 ]
